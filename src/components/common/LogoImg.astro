@@ -1,0 +1,22 @@
+---
+import { Image } from 'astro:assets';
+import type { Logo } from '@/data/logos';
+
+interface Props {
+  logo: Logo;
+  class?: string;
+  /** Rendered height in px (width follows the logo's own proportions). */
+  height?: number;
+  loading?: 'eager' | 'lazy';
+}
+const { logo, class: className, height = 32, loading = 'lazy' } = Astro.props;
+const { src, alt } = logo;
+const width = Math.round((src.width / src.height) * height);
+const isSvg = src.format === 'svg';
+---
+
+{isSvg ? (
+  <img class={className} src={src.src} width={width} height={height} alt={alt} {loading} decoding="async" />
+) : (
+  <Image class={className} src={src} alt={alt} width={width} height={height} densities={[1, 2]} quality={85} {loading} />
+)}

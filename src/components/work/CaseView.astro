@@ -1,0 +1,556 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import Banner from '@/components/common/Banner.astro';
+import C4Diagram from './C4Diagram.astro';
+import LogoImg from '@/components/common/LogoImg.astro';
+import { projectLogos } from '@/data/logos';
+import { caseSlugs, projectMeta, type CaseSlug } from '@/data/projects';
+import { c4, type C4Kind } from '@/data/c4';
+import { useTranslations, workPath, sectionPath, type Language } from '@/i18n/utils';
+
+interface Props {
+  slug: CaseSlug;
+  lang: Language;
+}
+const { slug, lang } = Astro.props;
+const meta = projectMeta[slug];
+const t = useTranslations(lang, 'projects')[slug];
+const c = useTranslations(lang, 'caseview');
+const w = useTranslations(lang, 'work');
+
+const next = caseSlugs[(caseSlugs.indexOf(slug) + 1) % caseSlugs.length];
+const nextText = useTranslations(lang, 'projects')[next];
+const frames = meta.gallery ?? (meta.image ? [meta.image] : []);
+const model = c4[slug];
+const brand = projectLogos[slug];
+const kindLabel = meta.kind === 'client' ? w.badgeClient : meta.kind === 'own' ? w.badgeOwn : w.badgeStudy;
+const levelKey = (n: number) => `l${n}` as 'l1' | 'l2' | 'l3';
+
+const hasDecisions = t.decisions.length > 0;
+const hasStack = meta.stack.length > 0;
+const tabs = [
+  { id: 'problem', label: c.tabs.problem, show: true },
+  { id: 'decisions', label: c.tabs.decisions, show: hasDecisions },
+  { id: 'stack', label: c.tabs.stack, show: hasStack },
+].filter((tab) => tab.show);
+
+const legend: C4Kind[] = ['person', 'system', 'container', 'database', 'external'];
+const usedKinds = new Set(Object.values(model.nodes).map((n) => n.kind));
+---
+
+<article class="case">
+  <header class="wrap case__head">
+    <a class="link case__back mono" href={sectionPath(lang, 'work')}><Icon name="arrow-left" /> {c.back}</a>
+    <div class="case__meta">
+      <span class="badge">{kindLabel}</span>
+      <span class="eyebrow">{t.category}</span>
+    </div>
+    {brand && <div class="case__brand"><LogoImg logo={brand} height={40} loading="eager" /></div>}
+    <h1 class="headline case__title" transition:name={`title-${slug}`}>{t.name}</h1>
+    <p class="case__summary measure" data-reveal>{t.summary}</p>
+    {meta.url && (
+      <p class="case__visit mono" data-reveal style="--d:60ms">
+        <a class="link" href={meta.url} target="_blank" rel="noopener">{c.visit} <Icon name="arrow-up-right" /></a>
+      </p>
+    )}
+  </header>
+
+  <div class="wrap case__split">
+    <div class="case__shots" data-sticky={frames.length <= 1 ? 'true' : 'false'}>
+      {frames.length > 0 ? (
+        frames.map((frame, i) => (
+          <figure class="case__shot" transition:name={i === 0 ? `shot-${slug}` : undefined}>
+            <Image
+              src={frame}
+              alt={frames.length > 1 ? `${c.shotOf} ${t.name} (${i + 1}/${frames.length})` : `${c.shotOf} ${t.name}`}
+              widths={[640, 960, 1280, 1600, 2000]}
+              sizes="(min-width: 1024px) 58vw, 100vw"
+              quality={84}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : undefined}
+            />
+            {meta.illustrative && i === 0 && <figcaption class="case__note mono">{c.illustrativeNote}</figcaption>}
+          </figure>
+        ))
+      ) : (
+        <p class="case__noshot mono">{c.noShot}</p>
+      )}
+    </div>
+
+    <section class="sysdoc" data-tabs aria-label={c.file}>
+      <div class="sysdoc__bar">
+        <span class="sysdoc__file mono">{c.file}</span>
+        <div class="sysdoc__tabs mono" role="tablist" aria-label={c.tabsLabel}>
+          {tabs.map((tab) => (
+            <button type="button" role="tab" id={`tab-${tab.id}`} aria-controls={`panel-${tab.id}`} aria-selected="false">{tab.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div class="sysdoc__panel" role="tabpanel" id="panel-problem" aria-labelledby="tab-problem">
+        <h2 class="sysdoc__h mono">{c.problem}</h2>
+        <p>{t.problem}</p>
+        <h2 class="sysdoc__h mono">{c.solution}</h2>
+        <p>{t.solution}</p>
+        <h2 class="sysdoc__h mono">{c.outcome}</h2>
+        <p>{t.outcome}</p>
+      </div>
+
+      {hasDecisions && (
+        <div class="sysdoc__panel" role="tabpanel" id="panel-decisions" aria-labelledby="tab-decisions">
+          <h2 class="sysdoc__h mono">{c.decisions}</h2>
+          <ol class="sysdoc__decisions">
+            {t.decisions.map((d, i) => (
+              <li>
+                <span class="mono sysdoc__n">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{d.title}</h3>
+                  <p>{d.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {hasStack && (
+        <div class="sysdoc__panel" role="tabpanel" id="panel-stack" aria-labelledby="tab-stack">
+          <h2 class="sysdoc__h mono">{c.stack}</h2>
+          <ul class="sysdoc__stack mono">
+            {meta.stack.map((s) => <li>{s}</li>)}
+          </ul>
+        </div>
+      )}
+    </section>
+  </div>
+
+  <!-- Architecture: C4 model, full width so the labels stay readable. -->
+  <section class="arch" aria-labelledby="arch-title" data-c4>
+    <Banner text={c.archBanner} label={c.arch} />
+    <div class="wrap arch__body">
+      <div class="arch__top">
+        <p id="arch-title" class="arch__intro">{c.archIntro}</p>
+        {model.views.length > 1 && (
+          <div class="arch__tabs mono" role="group" aria-label={c.arch}>
+            {model.views.map((v) => (
+              <button type="button" data-c4-tab aria-selected="false">
+                <span class="arch__lvl">C{v.level}</span> {c.levels[levelKey(v.level)]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {model.views.map((v) => (
+        <div class="arch__view" data-c4-view>
+          <p class="arch__hint mono">{c.levelHint[levelKey(v.level)]}</p>
+          <div class="arch__scroll" tabindex="0" role="region" aria-label={`${c.flowDiagram} · C${v.level}`}>
+            <C4Diagram {slug} {lang} view={v} draw label={`${c.flowDiagram} · C${v.level}`} />
+          </div>
+        </div>
+      ))}
+
+      <div class="arch__foot">
+        <ul class="arch__legend mono" aria-label="Leyenda">
+          {legend.filter((k) => usedKinds.has(k)).map((k) => (
+            <li><i class={`sw sw--${k}`}></i>{c.legend[k]}</li>
+          ))}
+          <li><i class="sw sw--pulse"></i>{c.legend.pulse}</li>
+        </ul>
+        <ol class="arch__steps mono" aria-label={c.steps}>
+          {t.flow.map((step, i) => <li><span>{String(i + 1).padStart(2, '0')}</span>{step}</li>)}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <nav class="wrap case__next" aria-label={c.next}>
+    <p class="eyebrow">{c.next}</p>
+    <a class="case__next-link" href={workPath(next, lang)}>
+      <span class="title next-name">{nextText.name}</span>
+      <Icon name="arrow-right" />
+    </a>
+    <p class="soft">{nextText.line}</p>
+  </nav>
+</article>
+
+<style>
+  .case__head {
+    padding-top: clamp(24px, 4vw, 48px);
+    padding-bottom: clamp(32px, 5vw, 64px);
+  }
+  .case__back {
+    display: inline-block;
+    margin-bottom: clamp(24px, 4vw, 48px);
+  }
+  .case__meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .case__brand {
+    margin-top: 22px;
+  }
+  .case__brand :global(img) {
+    height: 40px;
+    width: auto;
+  }
+  .case__title {
+    max-width: 16ch;
+    margin: clamp(28px, 3.4vw, 44px) 0 clamp(24px, 2.6vw, 36px);
+    font-size: clamp(40px, 6.4vw, 104px);
+    letter-spacing: -0.045em;
+    word-spacing: 0.1em;
+    line-height: 0.92;
+    text-wrap: balance;
+  }
+  .case__summary {
+    margin: 0;
+    font-size: clamp(22px, 2vw, 29px);
+    line-height: 1.18;
+    letter-spacing: -0.025em;
+  }
+  .case__visit {
+    margin: 20px 0 0;
+  }
+
+  .case__split {
+    display: grid;
+    gap: clamp(32px, 4vw, 56px);
+    padding-bottom: clamp(48px, 7vw, 96px);
+  }
+  @media (min-width: 1024px) {
+    .case__split {
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+      align-items: start;
+    }
+    .case__shots[data-sticky='true'] {
+      position: sticky;
+      top: 88px;
+    }
+  }
+  .case__shots {
+    display: grid;
+    gap: 20px;
+  }
+  .case__shot {
+    margin: 0;
+    background: var(--color-bone);
+    box-shadow: var(--shadow-card);
+  }
+  .case__shot :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .case__note {
+    margin: 0;
+    padding: 10px 14px;
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    font-size: 12px;
+  }
+  .case__noshot {
+    margin: 0;
+    padding: 28px;
+    background: var(--color-bone);
+    color: var(--color-charcoal);
+  }
+
+  /* SYSTEM.md: the whole panel is the system layer, so it is ink. */
+  .sysdoc {
+    background: var(--color-ink);
+    color: var(--color-parchment);
+  }
+  .sysdoc__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding: 14px clamp(16px, 2.4vw, 28px) 0;
+    border-bottom: 1px solid rgb(226 222 219 / 0.25);
+  }
+  .sysdoc__file {
+    padding-bottom: 14px;
+    opacity: 0.7;
+  }
+  .sysdoc__tabs {
+    display: none;
+  }
+  .sysdoc[data-ready] .sysdoc__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 20px;
+  }
+  .sysdoc__tabs button {
+    padding: 0 0 14px;
+    color: inherit;
+    opacity: 0.65;
+    border-bottom: 2px solid transparent;
+    transition:
+      opacity 150ms var(--ease-sig),
+      border-color 300ms var(--ease-sig);
+  }
+  .sysdoc__tabs button:hover {
+    opacity: 1;
+  }
+  .sysdoc__tabs button[aria-selected='true'] {
+    opacity: 1;
+    border-bottom-color: var(--color-ember-lit);
+  }
+  .sysdoc :focus-visible {
+    outline-color: var(--color-ember-lit);
+  }
+  .sysdoc__panel {
+    padding: clamp(20px, 3vw, 36px) clamp(16px, 2.4vw, 28px);
+  }
+  .sysdoc__panel + .sysdoc__panel {
+    border-top: 1px solid rgb(226 222 219 / 0.25);
+  }
+  .sysdoc[data-ready] .sysdoc__panel + .sysdoc__panel {
+    border-top: 0;
+  }
+  .sysdoc__panel[hidden] {
+    display: none;
+  }
+  .sysdoc__h {
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    opacity: 0.65;
+  }
+  .sysdoc__panel p {
+    margin: 0 0 28px;
+    max-width: 56ch;
+  }
+  .sysdoc__panel p:last-child {
+    margin-bottom: 0;
+  }
+  .sysdoc__decisions {
+    display: grid;
+    gap: 26px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sysdoc__decisions li {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 8px;
+  }
+  .sysdoc__n {
+    color: var(--color-ember-lit);
+    padding-top: 4px;
+  }
+  .sysdoc__decisions h3 {
+    margin: 0 0 6px;
+    font-family: var(--font-display);
+  font-variation-settings: 'opsz' 36;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .sysdoc__decisions p {
+    margin: 0;
+  }
+  .sysdoc__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Architecture band: continues the ink banner above it. */
+  .arch {
+    background: var(--color-ink);
+    color: var(--color-parchment);
+  }
+  .arch__body {
+    padding-block: clamp(20px, 3vw, 40px) clamp(40px, 6vw, 88px);
+  }
+  .arch__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 32px;
+    margin-bottom: clamp(20px, 3vw, 36px);
+  }
+  .arch__intro {
+    margin: 0;
+    max-width: 34em;
+    font-size: clamp(18px, 1.6vw, 22px);
+    line-height: 1.25;
+    opacity: 0.85;
+  }
+  .arch__tabs {
+    display: none;
+  }
+  .arch[data-ready] .arch__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+  }
+  .arch__tabs button {
+    padding: 8px 14px;
+    color: var(--color-parchment);
+    border: 1px solid rgb(226 222 219 / 0.4);
+    margin-left: -1px;
+    transition:
+      background 200ms var(--ease-sig),
+      color 200ms var(--ease-sig);
+  }
+  .arch__tabs button:hover {
+    background: rgb(226 222 219 / 0.12);
+  }
+  .arch__tabs button[aria-selected='true'] {
+    background: var(--color-parchment);
+    color: var(--color-ink);
+    border-color: var(--color-parchment);
+  }
+  .arch__lvl {
+    color: var(--color-ember-lit);
+    margin-right: 4px;
+  }
+  .arch__tabs button[aria-selected='true'] .arch__lvl {
+    color: var(--color-ember);
+  }
+  .arch :focus-visible {
+    outline-color: var(--color-ember-lit);
+  }
+  .arch__view[hidden] {
+    display: none;
+  }
+  .arch__view + .arch__view {
+    margin-top: 48px;
+  }
+  .arch[data-ready] .arch__view + .arch__view {
+    margin-top: 0;
+  }
+  .arch__hint {
+    margin: 0 0 8px;
+    opacity: 0.65;
+  }
+  /* On phones the diagram keeps a readable size and scrolls sideways. */
+  .arch__scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 8px;
+  }
+  .arch__scroll :global(.c4) {
+    min-width: 900px;
+  }
+  @media (min-width: 1000px) {
+    .arch__scroll :global(.c4) {
+      min-width: 0;
+    }
+  }
+  .arch__foot {
+    display: grid;
+    gap: 24px 48px;
+    margin-top: clamp(24px, 3vw, 40px);
+    padding-top: 20px;
+    border-top: 1px solid rgb(226 222 219 / 0.25);
+  }
+  @media (min-width: 900px) {
+    .arch__foot {
+      grid-template-columns: auto 1fr;
+      align-items: start;
+    }
+  }
+  .arch__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    opacity: 0.85;
+  }
+  .arch__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sw {
+    display: inline-block;
+    width: 22px;
+    height: 14px;
+    border: 1.3px solid var(--color-parchment);
+    background: #2a2927;
+  }
+  .sw--person {
+    border-color: var(--color-ember-lit);
+    border-radius: 6px;
+  }
+  .sw--system {
+    background: var(--color-parchment);
+  }
+  .sw--database {
+    border-radius: 50% / 30%;
+  }
+  .sw--external {
+    background: transparent;
+    border-style: dashed;
+    border-color: #a39d95;
+  }
+  .sw--pulse {
+    height: 4px;
+    width: 22px;
+    border: 0;
+    border-radius: 2px;
+    background: var(--color-ember-lit);
+  }
+  .arch__steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .arch__steps li span {
+    color: var(--color-ember-lit);
+    margin-right: 8px;
+  }
+
+  .case__next {
+    padding-block: clamp(64px, 9vw, 128px) 0;
+  }
+  .case__next-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    margin: 12px 0 8px;
+    transition: color 150ms var(--ease-sig);
+  }
+  .next-name {
+    font-size: clamp(40px, 6vw, 96px);
+  }
+  .case__next-link :global(svg) {
+    width: clamp(28px, 4vw, 48px);
+    height: clamp(28px, 4vw, 48px);
+    transition: translate 300ms var(--ease-sig);
+  }
+  .case__next-link:hover {
+    color: var(--color-ember);
+  }
+  .case__next-link:hover :global(svg) {
+    translate: 8px 0;
+  }
+  .case__next p {
+    margin: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .case__next-link :global(svg),
+    .sysdoc__tabs button,
+    .arch__tabs button {
+      transition: none;
+    }
+  }
+</style>

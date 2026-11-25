@@ -1,0 +1,112 @@
+---
+import { Icon } from 'astro-icon/components';
+import Banner from '@/components/common/Banner.astro';
+import Stamp from '@/components/common/Stamp.astro';
+import { profile } from '@/data/profile';
+import { useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang, 'closing');
+const meta = useTranslations(lang, 'meta');
+---
+
+<div id="contact">
+  <Banner text={t.banner} label={t.title} />
+  <section class="wrap closing">
+    <div class="closing__stamp">
+      <Stamp name={profile.name} role={meta.jobTitle} place={t.location} year="2026" />
+    </div>
+
+    <div class="closing__body">
+      <p class="eyebrow" data-reveal>06</p>
+      <button class="closing__email link" type="button" data-contact-open data-reveal style="--d:60ms">
+        {t.write}
+        <Icon name="arrow-right" class="closing__icon" />
+      </button>
+      <p class="mono soft closing__status" data-reveal style="--d:90ms">{t.writeNote}</p>
+
+      <div class="closing__lines measure" data-reveal style="--d:120ms">
+        {t.lines.map((line) => <p>{line}</p>)}
+      </div>
+
+      <ul class="closing__links" data-reveal style="--d:180ms">
+        <li><button class="link" type="button" data-cv-open><Icon name="download" /> {t.cv}</button></li>
+        <li><a class="link" href={profile.github} target="_blank" rel="noopener"><Icon name="logo-github" /> {t.github}</a></li>
+        <li><a class="link" href={profile.linkedin} target="_blank" rel="noopener"><Icon name="logo-linkedin" /> {t.linkedin}</a></li>
+        <li class="mono soft"><Icon name="map-pin" /> {t.location}</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<style>
+  .closing {
+    display: grid;
+    gap: clamp(32px, 5vw, 72px);
+    padding-block: clamp(40px, 6vw, 96px) clamp(48px, 7vw, 96px);
+  }
+  @media (min-width: 900px) {
+    .closing {
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+  .closing__stamp {
+    display: grid;
+    justify-items: center;
+    padding: 12px;
+    /* The stamp starts oversized before it lands; keep that from widening the page. */
+    overflow: clip;
+  }
+  .closing__body .eyebrow {
+    margin: 0 0 16px;
+  }
+  .closing__email {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 100%;
+    font-family: var(--font-display);
+  font-variation-settings: 'opsz' 36;
+    font-weight: 700;
+    font-size: clamp(22px, 3.4vw, 48px);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    text-align: left;
+    cursor: pointer;
+  }
+  .closing__icon {
+    width: 0.55em;
+    height: 0.55em;
+    flex-shrink: 0;
+  }
+  .closing__status {
+    min-height: 1.5em;
+    margin: 8px 0 0;
+  }
+  .closing__lines {
+    margin-top: clamp(24px, 3vw, 40px);
+  }
+  .closing__lines p {
+    margin: 0 0 14px;
+  }
+  .closing__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 17px;
+  }
+  /* Keep every icon on the same line as its label, including the plain location item. */
+  .closing__links :global(svg) {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.12em;
+  }
+</style>

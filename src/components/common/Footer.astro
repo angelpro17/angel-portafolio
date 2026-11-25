@@ -1,0 +1,28 @@
+---
+import { useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const t = useTranslations(Astro.props.lang, 'footer');
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__row">
+    <p>{t.rights}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-ink);
+    padding-block: 28px 36px;
+  }
+  .site-footer__row {
+    text-align: center;
+    font-size: 16px;
+  }
+  p {
+    margin: 0;
+  }
+</style>

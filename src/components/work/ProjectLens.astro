@@ -1,0 +1,384 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import C4Diagram from './C4Diagram.astro';
+import LogoImg from '@/components/common/LogoImg.astro';
+import { projectLogos, wordmarkSlugs, inlineMarkSlugs } from '@/data/logos';
+import { projectMeta, type CaseSlug } from '@/data/projects';
+import { lensView } from '@/data/c4';
+import { useTranslations, workPath, type Language } from '@/i18n/utils';
+
+interface Props {
+  slug: CaseSlug;
+  lang: Language;
+  /** First screen only: loads the screenshot eagerly with high priority. */
+  eager?: boolean;
+  /** Lens radius in px. */
+  radius?: number;
+  /** Set a view-transition name so the card morphs into its case page. One card per slug per page. */
+  morph?: boolean;
+  /** Reveal delay in ms. */
+  delay?: number;
+  /** Show the "featured" badge instead of client/own. */
+  featured?: boolean;
+}
+const { slug, lang, eager = false, radius = 150, morph = true, delay = 0, featured = false } = Astro.props;
+const meta = projectMeta[slug];
+const t = useTranslations(lang, 'projects')[slug];
+const w = useTranslations(lang, 'work');
+const c = useTranslations(lang, 'caseview');
+const href = workPath(slug, lang);
+const tags = meta.stack.slice(0, 3);
+const brand = projectLogos[slug];
+const wordmark = Boolean(brand) && wordmarkSlugs.has(slug);
+const inlineMark = Boolean(brand) && inlineMarkSlugs.has(slug);
+const badge = featured ? w.badgeFeatured : meta.kind === 'client' ? w.badgeClient : meta.kind === 'own' ? w.badgeOwn : w.badgeStudy;
+// "Cliente · ONG" → "ONG": the kind already lives in the badge.
+const byline = t.category.split(' · ').slice(1).join(' · ');
+---
+
+<article
+  class="lens"
+  data-lens
+  data-has-shot={meta.image ? 'true' : 'false'}
+  data-lens-radius={radius}
+  data-mode="product"
+>
+  <div
+    class="lens__stage"
+    data-reveal="wipe"
+    style={`--d:${delay}ms`}
+    transition:name={morph ? `shot-${slug}` : undefined}
+  >
+    {meta.image && (
+      <Image
+        class="lens__shot"
+        src={meta.image}
+        alt={`${c.shotOf} ${t.name}`}
+        widths={[640, 960, 1280, 1600, 2000]}
+        sizes="(min-width: 1024px) 640px, 100vw"
+        quality={82}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchpriority={eager ? 'high' : undefined}
+      />
+    )}
+    <div class="lens__system" aria-hidden="true">
+      <C4Diagram {slug} {lang} view={lensView(slug)} compact />
+    </div>
+    {meta.image && <span class="lens__ring" aria-hidden="true"></span>}
+    {!meta.image && <span class="lens__noshot mono">{w.noShot}</span>}
+    {meta.illustrative && <span class="lens__tag mono">{w.illustrative}</span>}
+  </div>
+
+  <div class="lens__meta">
+    {brand && !wordmark && !inlineMark && <div class="lens__brand"><LogoImg logo={brand} height={28} /></div>}
+    <div class="lens__head">
+      <h3 class:list={['lens__title', 'title', { 'lens__title--mark': wordmark }]} transition:name={morph ? `title-${slug}` : undefined}>
+        <a class="lens__link" href={href}>
+          {wordmark && brand ? (
+            <LogoImg class="lens__mark" logo={brand} height={44} />
+          ) : inlineMark && brand ? (
+            <span class="lens__inline"><LogoImg logo={brand} height={40} /><span>{t.name}</span></span>
+          ) : (
+            t.name
+          )}
+        </a>
+      </h3>
+      <span class="badge">{badge}</span>
+    </div>
+    <p class="lens__line">{t.line}</p>
+    <p class="lens__by soft">
+      {byline && <span>{byline}</span>}
+      {tags.length > 0 && <span class="mono"> {byline ? '· ' : ''}{tags.join(' · ')}</span>}
+    </p>
+    <span class="lens__open"><span class="lens__open-text">{w.open}</span> <Icon name="arrow-up-right" /></span>
+  </div>
+
+  {meta.image && (
+    <button
+      class="lens__toggle mono"
+      type="button"
+      aria-pressed="false"
+      data-lens-toggle
+      data-show={w.lensShow}
+      data-hide={w.lensHide}
+    >{w.lensShow}</button>
+  )}
+</article>
+
+<style>
+  .lens {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    background: var(--color-bone);
+    border-radius: 11.5px;
+    box-shadow: var(--shadow-card);
+  }
+  .lens__stage {
+    --lens-radius: 150px;
+    position: relative;
+    aspect-ratio: 1.86;
+    overflow: hidden;
+    background: var(--color-parchment);
+    transition: --lens-r 200ms var(--ease-exit);
+  }
+  .lens__stage[data-on] {
+    --lens-r: var(--lens-radius);
+    transition: --lens-r 300ms var(--ease-sig);
+  }
+  .lens[data-mode='system'] .lens__stage {
+    --lens-r: 1800px;
+    transition: --lens-r 600ms var(--ease-sig);
+  }
+  .lens[data-has-shot='false'] .lens__stage {
+    --lens-r: 1800px;
+  }
+
+  .lens__shot {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: scale 300ms var(--ease-sig);
+  }
+  .lens:hover .lens__shot {
+    scale: 1.02;
+  }
+
+  /* The system layer: an ink plate with a faint grid. */
+  .lens__system {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 5% 6%;
+    background-color: var(--color-ink);
+    background-image:
+      linear-gradient(rgb(226 222 219 / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(226 222 219 / 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    clip-path: circle(var(--lens-r) at var(--lens-x) var(--lens-y));
+  }
+  .lens__ring {
+    position: absolute;
+    left: var(--lens-x);
+    top: var(--lens-y);
+    width: calc(var(--lens-r) * 2);
+    height: calc(var(--lens-r) * 2);
+    translate: -50% -50%;
+    border: 2px solid var(--color-ember-lit);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms var(--ease-sig);
+  }
+  .lens__stage[data-on] .lens__ring {
+    opacity: 1;
+  }
+  .lens[data-mode='system'] .lens__ring {
+    opacity: 0;
+  }
+  .lens__noshot {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    color: var(--color-parchment);
+    opacity: 0.75;
+  }
+
+  .lens__title--mark {
+    margin: 0 0 14px;
+    line-height: 0;
+  }
+  .lens__title--mark :global(img) {
+    display: block;
+    height: 44px;
+    width: auto;
+    filter: grayscale(1) contrast(1.3);
+    mix-blend-mode: multiply;
+    transition: filter 400ms var(--ease-sig);
+  }
+  .lens:hover .lens__title--mark :global(img),
+  .lens:focus-within .lens__title--mark :global(img) {
+    filter: none;
+  }
+  @media (hover: none) {
+    .lens__title--mark :global(img) {
+      filter: none;
+    }
+  }
+  .lens__inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .lens__inline :global(img) {
+    height: 40px;
+    width: auto;
+    filter: grayscale(1) contrast(1.3);
+    transition: filter 400ms var(--ease-sig);
+  }
+  .lens:hover .lens__inline :global(img),
+  .lens:focus-within .lens__inline :global(img) {
+    filter: none;
+  }
+  @media (hover: none) {
+    .lens__inline :global(img) {
+      filter: none;
+    }
+  }
+  .lens__brand {
+    margin-bottom: 14px;
+  }
+  .lens__brand :global(img) {
+    height: 28px;
+    width: auto;
+    filter: grayscale(1) contrast(1.3);
+    mix-blend-mode: multiply;
+    transition: filter 400ms var(--ease-sig);
+  }
+  .lens:hover .lens__brand :global(img) {
+    filter: none;
+  }
+  @media (hover: none) {
+    .lens__brand :global(img) {
+      filter: none;
+    }
+  }
+  .lens__tag {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 3;
+    padding: 3px 8px;
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  .lens__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .lens__title {
+    margin: 0 0 8px;
+    font-size: clamp(30px, 3.2vw, 44px);
+    transition: color 150ms var(--ease-sig);
+  }
+  .lens__head .badge {
+    align-self: flex-start;
+    margin-top: 10px;
+  }
+  /* The whole card is one big link target. */
+  .lens__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: 11.5px;
+  }
+  .lens__line {
+    margin: 0;
+    max-width: 40ch;
+    font-size: 20px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .lens__by {
+    margin: 12px 0 0;
+    font-size: 16px;
+  }
+  .lens__by .mono {
+    font-size: 12px;
+  }
+  .lens__open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 16px;
+  }
+  .lens__open-text {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 1px;
+    padding-bottom: 2px;
+  }
+  .lens__open :global(svg) {
+    width: 14px;
+    height: 14px;
+    transition: translate 300ms var(--ease-sig);
+  }
+  .lens:hover .lens__open :global(svg) {
+    translate: 3px -3px;
+  }
+  .lens:hover .lens__title,
+  .lens:focus-within .lens__title {
+    color: var(--color-ember);
+  }
+
+  .lens__toggle {
+    position: absolute;
+    top: 36px;
+    right: 36px;
+    z-index: 2;
+    padding: 6px 10px;
+    background: var(--color-parchment);
+    color: var(--color-ink);
+    border: 1px solid var(--color-ink);
+  }
+  .lens__toggle:hover {
+    background: var(--color-ink);
+    color: var(--color-parchment);
+  }
+  /* With a real pointer the lens does the job; keyboard users still reach the button on focus. */
+  @media (hover: hover) and (pointer: fine) {
+    .lens__toggle:not(:focus-visible) {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lens__stage,
+    .lens__stage[data-on],
+    .lens[data-mode='system'] .lens__stage,
+    .lens__shot,
+    .lens__ring {
+      transition: none;
+    }
+    .lens:hover .lens__shot {
+      scale: 1;
+    }
+  }
+
+  /* Without JavaScript the system layer becomes a figure under the screenshot. */
+  @media (scripting: none) {
+    .lens__stage {
+      aspect-ratio: auto;
+      display: flex;
+      flex-direction: column;
+      overflow: visible;
+    }
+    .lens__shot {
+      aspect-ratio: 1.86;
+    }
+    .lens__system {
+      position: static;
+      aspect-ratio: 1.86;
+      clip-path: none;
+    }
+    .lens__toggle,
+    .lens__ring {
+      display: none;
+    }
+  }
+</style>

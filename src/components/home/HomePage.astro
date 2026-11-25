@@ -1,0 +1,33 @@
+---
+import Opening from './Opening.astro';
+import Bio from './Bio.astro';
+import WorkGrid from './WorkGrid.astro';
+import Path from './Path.astro';
+import Tools from './Tools.astro';
+import Closing from './Closing.astro';
+import { clientSlugs, ownSlugs, studySlugs } from '@/data/projects';
+import { useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const { lang } = Astro.props;
+const w = useTranslations(lang, 'work');
+---
+
+<Opening {lang} />
+<Bio {lang} />
+<WorkGrid
+  {lang}
+  id="work"
+  index="01"
+  banner={w.clientsBanner}
+  label={w.clientsTitle}
+  intro={w.clientsIntro}
+  slugs={clientSlugs}
+/>
+<WorkGrid {lang} id="own" index="02" banner={w.ownBanner} label={w.ownTitle} intro={w.ownIntro} slugs={ownSlugs} />
+<WorkGrid {lang} id="study" index="03" banner={w.studyBanner} label={w.studyTitle} intro={w.studyIntro} slugs={studySlugs} three />
+<Path {lang} />
+<Tools {lang} />
+<Closing {lang} />

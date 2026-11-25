@@ -1,0 +1,307 @@
+---
+import { Image } from 'astro:assets';
+import Banner from '@/components/common/Banner.astro';
+import SectionIntro from '@/components/common/SectionIntro.astro';
+import LogoImg from '@/components/common/LogoImg.astro';
+import { pathIds, pathLogos, freelanceClients, type Logo } from '@/data/path';
+import { useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const t = useTranslations(Astro.props.lang, 'path');
+const isSvg = (logo: Logo) => logo.src.format === 'svg';
+---
+
+<div id="path">
+  <Banner text={t.banner} label={t.title} />
+  <SectionIntro index="04" intro={t.intro} />
+
+  <ol class="wrap ledger">
+    {pathIds.map((id, i) => {
+      const item = t.items[id];
+      const logo = pathLogos[id];
+      return (
+        <li class="row" data-reveal="row" style={`--d:${i * 40}ms`}>
+          <span class="row__idx mono">{String(i + 1).padStart(2, '0')}</span>
+
+          <div class="row__plate">
+            {logo ? (
+              isSvg(logo) ? (
+                <img class="row__logo" src={logo.src.src} width={logo.src.width} height={logo.src.height} alt={logo.alt} loading="lazy" />
+              ) : (
+                <Image class="row__logo" src={logo.src} alt={logo.alt} widths={[160, 320]} sizes="160px" quality={80} loading="lazy" />
+              )
+            ) : (
+              <img class="row__mark" src="/brand/symbol.svg" width="72" height="65" alt="Angel Anampa" loading="lazy" />
+            )}
+          </div>
+
+          <div class="row__main">
+            <p class="eyebrow row__period">{item.period}</p>
+            <h3 class="row__place">{item.place}</h3>
+            <p class="row__role">{item.role}</p>
+            {id === 'freelance' && (
+              <ul class="row__clients" aria-label="Clientes">
+                {freelanceClients.map((c) => (
+                  <li><LogoImg logo={c} height={26} class="row__client" /></li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <ul class="row__bullets">
+            {item.bullets.map((b) => <li>{b}</li>)}
+          </ul>
+        </li>
+      );
+    })}
+  </ol>
+</div>
+
+<style>
+  .ledger {
+    position: relative;
+    margin-block: clamp(28px, 4vw, 58px) clamp(48px, 7vw, 115px);
+    list-style: none;
+    border-bottom: 1px solid var(--color-ink);
+  }
+
+  .row {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    gap: 16px 28px;
+    padding: clamp(28px, 4vw, 56px) clamp(0px, 1.4vw, 20px);
+    border-top: 1px solid var(--color-ink);
+  }
+  @media (min-width: 900px) {
+    .row {
+      grid-template-columns: 40px 176px minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+      gap: 24px 40px;
+    }
+  }
+
+  .row__idx {
+    color: var(--color-charcoal);
+    padding-top: 6px;
+  }
+
+  /* Logo plate: marks are shown in ink, so different brands read as one system. */
+  .row__plate {
+    display: grid;
+    place-items: center;
+    width: 176px;
+    height: 112px;
+    background: var(--color-bone);
+    overflow: hidden;
+    transition:
+      rotate 500ms var(--ease-sig),
+      translate 500ms var(--ease-sig),
+      background 300ms var(--ease-sig);
+  }
+  .row__logo {
+    /* Pixel caps, not percentages: the plate's grid row sizes itself to the image, so a percentage never limits it. */
+    max-width: 136px;
+    max-height: 84px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: grayscale(1) contrast(1.35);
+    mix-blend-mode: multiply;
+    transition: filter 400ms var(--ease-sig);
+  }
+  .row__mark {
+    width: 72px;
+    height: auto;
+    max-height: 70px;
+  }
+
+  .row__period {
+    margin: 0 0 8px;
+  }
+  .row__place {
+    margin: 0;
+    font-family: var(--font-banner);
+  font-variation-settings: 'opsz' 36;
+    font-weight: 900;
+    font-size: clamp(36px, 4.4vw, 68px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+  .row__role {
+    margin: 10px 0 0;
+    font-size: 19px;
+    line-height: 1.2;
+    color: var(--color-charcoal);
+  }
+  .row__bullets {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 18px;
+    line-height: 1.35;
+  }
+  .row__bullets li {
+    position: relative;
+    padding-left: 22px;
+  }
+  .row__bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5em;
+    width: 8px;
+    height: 8px;
+    background: var(--color-ember);
+  }
+  @media (min-width: 900px) {
+    .row__bullets {
+      padding-top: 30px;
+    }
+  }
+
+  .row__clients {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* Each client mark sits on its own parchment chip so it stays legible when the row inverts to ink. */
+  .row__clients li {
+    display: grid;
+    place-items: center;
+    padding: 8px 14px;
+    background: var(--color-parchment);
+    outline: 1px solid var(--color-bone);
+  }
+  .row__clients :global(img) {
+    height: 26px;
+    width: auto;
+    mix-blend-mode: multiply;
+    filter: grayscale(1) contrast(1.3);
+    transition: filter 400ms var(--ease-sig);
+  }
+
+  /* Hover (real pointers only): the row inverts to an ink plate, the plate tilts and the mark regains its colour. */
+  .row::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-ink);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 400ms var(--ease-sig);
+  }
+  .row,
+  .row__idx,
+  .row__role {
+    transition: color 300ms var(--ease-sig);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .row:hover::before {
+      transform: scaleY(1);
+    }
+    .row:hover {
+      color: var(--color-parchment);
+    }
+    .row:hover .row__idx,
+    .row:hover .row__role,
+    .row:hover .row__period {
+      color: rgb(226 222 219 / 0.72);
+    }
+    .row:hover .row__plate {
+      background: var(--color-parchment);
+      rotate: -3deg;
+      translate: 0 -6px;
+    }
+    .row:hover .row__logo,
+    .row:hover .row__clients :global(img) {
+      filter: none;
+    }
+  }
+  @media (hover: none) {
+    .row__logo,
+    .row__clients :global(img) {
+      filter: none;
+    }
+  }
+
+  /* Entry choreography: the rule draws, then plate, text and name follow in order. */
+  @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    .row {
+      border-top-color: transparent;
+    }
+    .row::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 1px;
+      background: var(--color-ink);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 900ms var(--ease-sig) var(--d, 0ms);
+    }
+    .row.is-in::after {
+      transform: scaleX(1);
+    }
+    .row__idx,
+    .row__period,
+    .row__place,
+    .row__role,
+    .row__bullets li,
+    .row__clients {
+      opacity: 0;
+      translate: 0 10px;
+      transition:
+        opacity 600ms var(--ease-sig),
+        translate 600ms var(--ease-sig),
+        color 300ms var(--ease-sig);
+    }
+    .row__plate {
+      clip-path: inset(0 100% 0 0);
+      transition:
+        clip-path 700ms var(--ease-sig),
+        rotate 500ms var(--ease-sig),
+        translate 500ms var(--ease-sig),
+        background 300ms var(--ease-sig);
+    }
+    .row.is-in .row__plate {
+      clip-path: inset(0 0 0 0);
+      transition-delay: calc(var(--d, 0ms) + 120ms), 0ms, 0ms, 0ms;
+    }
+    .row.is-in .row__idx,
+    .row.is-in .row__period,
+    .row.is-in .row__place,
+    .row.is-in .row__role,
+    .row.is-in .row__bullets li,
+    .row.is-in .row__clients {
+      opacity: 1;
+      translate: 0 0;
+    }
+    .row.is-in .row__idx { transition-delay: calc(var(--d, 0ms) + 60ms); }
+    .row.is-in .row__period { transition-delay: calc(var(--d, 0ms) + 140ms); }
+    .row.is-in .row__place { transition-delay: calc(var(--d, 0ms) + 200ms); }
+    .row.is-in .row__role { transition-delay: calc(var(--d, 0ms) + 280ms); }
+    .row.is-in .row__bullets li:nth-child(1) { transition-delay: calc(var(--d, 0ms) + 300ms); }
+    .row.is-in .row__bullets li:nth-child(2) { transition-delay: calc(var(--d, 0ms) + 380ms); }
+    .row.is-in .row__bullets li:nth-child(3) { transition-delay: calc(var(--d, 0ms) + 460ms); }
+    .row.is-in .row__clients { transition-delay: calc(var(--d, 0ms) + 520ms); }
+
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .row::before,
+    .row__logo,
+    .row__plate {
+      transition: none;
+    }
+  }
+</style>

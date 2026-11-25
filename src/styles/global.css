@@ -1,0 +1,311 @@
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/700.css';
+@import '@fontsource-variable/bricolage-grotesque/opsz.css';
+@import 'tailwindcss';
+@import './dialog.css';
+
+/*
+ * Design tokens — broadsheet edition.
+ * Rule: ink black = the system layer; ember orange = the stamp (the only chromatic note).
+ * Images, banners and the lens have radius 0. Cards have 11px. No gradients, no blur.
+ */
+@theme {
+  --color-parchment: #e2dedb;
+  --color-bone: #cdc6be;
+  --color-ink: #1d1d1b;
+  --color-charcoal: #69645f;
+  --color-ember: #c03f13;
+  --color-ember-lit: #e8602f;
+
+  --font-banner: 'Bricolage Grotesque Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-text: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Motion identity: one signature curve; 150 / 300 / 600 ms, plus 900 for banners. */
+  --ease-sig: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --shadow-card: rgb(29 29 27 / 0.2) -4px 4px 6px 0;
+}
+
+/* Registered so the lens can animate its radius while its position follows the cursor. */
+@property --lens-r {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+@property --lens-x {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+@property --lens-y {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+
+@layer base {
+  html {
+    background: var(--color-parchment);
+    color: var(--color-ink);
+    scroll-padding-top: 72px;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-text);
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-kerning: normal;
+    font-variant-ligatures: none;
+    font-feature-settings: 'liga' 0, 'clig' 0, 'calt' 0;
+    overflow-x: clip;
+  }
+  main {
+    flex: 1;
+  }
+  h1,
+  h2,
+  h3 {
+    font-weight: 400;
+  }
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+  ::selection {
+    background: var(--color-ember);
+    color: var(--color-parchment);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------- Layout primitives ---------- */
+.wrap {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3vw, 43px);
+}
+.measure {
+  max-width: 34em;
+}
+.section {
+  padding-block: clamp(48px, 7vw, 115px);
+}
+
+/* ---------- Type ---------- */
+.headline {
+  font-family: var(--font-banner);
+  font-variation-settings: 'opsz' 36;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+}
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 36;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-charcoal);
+}
+.soft {
+  color: var(--color-charcoal);
+}
+
+/* Square ember tag — the only chromatic UI element. */
+.badge {
+  display: inline-block;
+  padding: 3px 8px 2px;
+  border-radius: 3px;
+  background: var(--color-ember);
+  color: var(--color-parchment);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* ---------- Links: always underlined; hover redraws the underline in ember ---------- */
+.link {
+  color: inherit;
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--color-ember), var(--color-ember));
+  background-repeat: no-repeat;
+  background-position:
+    0 100%,
+    0 100%;
+  background-size:
+    100% 1px,
+    0 1px;
+  padding-bottom: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition:
+    background-size 300ms var(--ease-sig),
+    color 150ms var(--ease-sig);
+}
+.link:hover,
+.link:focus-visible {
+  color: var(--color-ember);
+  background-size:
+    100% 1px,
+    100% 1px;
+}
+button.link {
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.link svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.12em;
+}
+
+/* ---------- Reveal on scroll (only when JS runs and motion is allowed) ---------- */
+@media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+  [data-reveal]:not([data-reveal='letters']):not([data-reveal='row']) {
+    opacity: 0;
+    translate: 0 8px;
+    transition:
+      opacity 600ms var(--ease-sig) var(--d, 0ms),
+      translate 600ms var(--ease-sig) var(--d, 0ms);
+  }
+  [data-reveal]:not([data-reveal='letters']):not([data-reveal='row']).is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  [data-reveal='wipe'] {
+    opacity: 1;
+    translate: none;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 800ms var(--ease-sig) var(--d, 0ms);
+  }
+  [data-reveal='wipe'].is-in {
+    clip-path: inset(0 0 0 0);
+  }
+  [data-reveal='wipe'] img {
+    scale: 1.04;
+    transition: scale 800ms var(--ease-sig) var(--d, 0ms);
+  }
+  [data-reveal='wipe'].is-in img {
+    scale: 1;
+  }
+}
+
+/* ---------- Entry veil: first visit of the session only ---------- */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  pointer-events: none;
+  background: var(--color-ink);
+  color: var(--color-parchment);
+}
+.veil__logo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: clamp(240px, 46vw, 560px);
+  height: auto;
+  overflow: visible;
+}
+/* Letter by letter: each glyph rises from its baseline, staggered. */
+.vl {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+html[data-veil='on'] .veil {
+  display: block;
+  animation: veil-out 900ms var(--ease-sig) 2000ms forwards;
+}
+html[data-veil='on'] .vl {
+  animation: veil-letter 650ms cubic-bezier(0.2, 0, 0, 1) calc(150ms + var(--i) * 80ms) forwards;
+}
+html[data-veil='on'] .veil__logo {
+  animation: veil-logo-out 350ms var(--ease-exit) 1750ms forwards;
+}
+@keyframes veil-letter {
+  from {
+    opacity: 0;
+    transform: translateY(45%) scaleY(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes veil-logo-out {
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+@keyframes veil-out {
+  to {
+    transform: translateY(-100%);
+    visibility: hidden;
+  }
+}
+
+/* ---------- Page-to-page morph (tarjeta → caso) ---------- */
+::view-transition-group(*) {
+  animation-duration: 600ms;
+  animation-timing-function: var(--ease-sig);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

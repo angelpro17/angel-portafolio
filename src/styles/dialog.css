@@ -1,0 +1,567 @@
+/* Shared look of the site's dialogs (CV request, contact): one panel, one form language, one waiting state. */
+  .dlg {
+    width: min(480px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--color-ink);
+    border-radius: 11.5px;
+    background: var(--color-bone);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-card);
+    overflow: auto;
+  }
+  .dlg::backdrop {
+    background: rgb(29 29 27 / 0.72);
+  }
+  .dlg__panel {
+    position: relative;
+    padding: clamp(24px, 5vw, 36px);
+    display: grid;
+    gap: 16px;
+  }
+  .dlg__eyebrow {
+    margin: 0;
+  }
+  .dlg__title {
+    margin: 0;
+    font-size: clamp(26px, 5vw, 32px);
+    line-height: 1.05;
+  }
+  .dlg__intro {
+    margin: 0;
+    color: var(--color-charcoal);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .dlg__step {
+    display: grid;
+    gap: 14px;
+  }
+  .dlg__step[hidden] {
+    display: none;
+  }
+  .dlg__close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: none;
+    color: var(--color-ink);
+    font: 400 28px/1 var(--font-display);
+    cursor: pointer;
+  }
+  .dlg__field {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .dlg__reasons {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .dlg__reasons legend {
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  .dlg__chips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 440px) {
+    .dlg__chips {
+      grid-template-columns: 1fr;
+    }
+  }
+  .dlg__chip {
+    position: relative;
+    display: block;
+  }
+  .dlg__chip input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .dlg__chip span {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-ink);
+    background: var(--color-parchment);
+    font-size: 14px;
+    line-height: 1.25;
+    transition:
+      background-color 150ms var(--ease-sig),
+      color 150ms var(--ease-sig),
+      border-color 150ms var(--ease-sig);
+  }
+  .dlg__chip:hover span {
+    border-color: var(--color-ember);
+  }
+  .dlg__chip input:checked + span {
+    background: var(--color-ink);
+    color: var(--color-parchment);
+  }
+  .dlg__chip input:focus-visible + span {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+  }
+  .dlg__other {
+    margin-top: 10px;
+  }
+  .dlg__other[hidden] {
+    display: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .dlg__other:not([hidden]) {
+      animation: cv-step 300ms var(--ease-sig);
+    }
+  }
+  .dlg__field span b {
+    color: var(--color-ember);
+  }
+  .dlg__field small {
+    color: var(--color-charcoal);
+    font-size: 12.5px;
+  }
+  .dlg input[type='email'],
+  .dlg input[type='tel'],
+  .dlg input[type='text'],
+  .dlg textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-ink);
+    border-radius: 0;
+    background: var(--color-parchment);
+    color: var(--color-ink);
+    font: 400 16px/1.3 var(--font-display);
+    resize: vertical;
+  }
+  .dlg input:focus-visible,
+  .dlg textarea:focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+  }
+  .dlg__code {
+    font-family: var(--font-mono) !important;
+    font-size: 28px !important;
+    letter-spacing: 0.4em;
+    text-align: center;
+  }
+  .dlg__check {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 10px;
+    align-items: start;
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .dlg__check input {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    accent-color: var(--color-ember);
+  }
+  .dlg__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .dlg__error {
+    min-height: 1.2em;
+    margin: 0;
+    color: var(--color-ember);
+    font-size: 14px;
+  }
+  .dlg__dev {
+    margin: 0;
+    padding: 8px 10px;
+    background: var(--color-parchment);
+    font-size: 13px;
+  }
+  .dlg__submit {
+    min-height: 48px;
+    padding: 12px 20px;
+    border: 1px solid var(--color-ink);
+    border-radius: 0;
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    font: 800 15px/1 var(--font-display);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition:
+      background-color 150ms var(--ease-sig),
+      color 150ms var(--ease-sig);
+  }
+  .dlg__submit:hover:not([aria-disabled='true']),
+  .dlg__submit:focus-visible:not([aria-disabled='true']) {
+    background: var(--color-ember);
+    border-color: var(--color-ember);
+    color: #fff;
+  }
+  .dlg__submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .dlg__submit[aria-disabled='true'] {
+    cursor: progress;
+  }
+
+  /*
+   * Waiting feedback (the send takes a few seconds: mail provider round trip).
+   * Three layers, so the dialog never looks frozen:
+   * 1. a thin ember line sweeps across the top of the panel (ambient, looping)
+   * 2. a spinner appears in the button, delayed 150 ms so fast replies do not flash
+   * 3. a live-region line says what is happening, and after 4 s that it is still on its way
+   * Fields lock while busy so nothing can be edited or sent twice.
+   */
+  .dlg__bar {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms var(--ease-sig);
+  }
+  .dlg__bar i {
+    display: block;
+    width: 40%;
+    height: 100%;
+    background: var(--color-ember);
+  }
+  .dlg[data-busy] .dlg__bar {
+    opacity: 1;
+  }
+  .dlg__spin {
+    display: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+  }
+  .dlg__status {
+    min-height: 1.3em;
+    margin: -6px 0 0;
+    color: var(--color-charcoal);
+    font-size: 12.5px;
+  }
+  .dlg__step[data-busy] .dlg__field,
+  .dlg__step[data-busy] .dlg__check {
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 150ms var(--ease-sig);
+  }
+  .dlg__step[data-busy] .dlg__spin {
+    display: inline-block;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .dlg[data-busy] .dlg__bar i {
+      animation: cv-sweep 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .dlg__step[data-busy] .dlg__spin {
+      animation:
+        cv-spin 700ms linear infinite,
+        cv-spin-in 150ms var(--ease-sig) 150ms both;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dlg[data-busy] .dlg__bar i {
+      width: 100%;
+      opacity: 0.55;
+    }
+  }
+  @keyframes cv-sweep {
+    from {
+      translate: -100% 0;
+    }
+    to {
+      translate: 260% 0;
+    }
+  }
+  @keyframes cv-spin {
+    to {
+      rotate: 360deg;
+    }
+  }
+  @keyframes cv-spin-in {
+    from {
+      opacity: 0;
+    }
+  }
+  .dlg__back {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .dlg__done {
+    justify-items: start;
+  }
+  .dlg__seal {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 4px;
+  }
+  .dlg__disc {
+    fill: var(--color-ember);
+  }
+  .dlg__tick {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  .dlg__ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--color-ember);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /*
+   * Verified seal, in four beats (motion-design: primary, secondary, ambient):
+   * 1. disc pops in with a small overshoot (0 to 400 ms)
+   * 2. tick draws itself (220 to 560 ms)
+   * 3. two rings ripple out once (300 to 1100 ms)
+   * 4. title, text and button rise in sequence, 70 ms apart (420 ms on)
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    .dlg__done:not([hidden]) .dlg__disc {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: seal-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .dlg__done:not([hidden]) .dlg__tick {
+      animation: seal-draw 340ms var(--ease-sig) 220ms both;
+    }
+    .dlg__done:not([hidden]) .dlg__ring {
+      animation: seal-ring 800ms var(--ease-sig) 300ms both;
+    }
+    .dlg__done:not([hidden]) .dlg__ring--2 {
+      animation-delay: 440ms;
+    }
+    .dlg__done:not([hidden]) .dlg__rise {
+      animation: seal-rise 420ms var(--ease-sig) calc(420ms + var(--i) * 70ms) both;
+    }
+  }
+  @keyframes seal-pop {
+    from {
+      scale: 0.4;
+      opacity: 0;
+    }
+  }
+  @keyframes seal-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  @keyframes seal-ring {
+    from {
+      scale: 1;
+      opacity: 0.55;
+    }
+    to {
+      scale: 1.9;
+      opacity: 0;
+    }
+  }
+  @keyframes seal-rise {
+    from {
+      opacity: 0;
+      translate: 0 10px;
+    }
+  }
+
+  /* Enter: rises 12px with the signature ease. Exit is instant (native close). */
+  @media (prefers-reduced-motion: no-preference) {
+    .dlg[open] {
+      animation: cv-in 300ms var(--ease-sig);
+    }
+    .dlg[open]::backdrop {
+      animation: cv-fade 300ms var(--ease-sig);
+    }
+    .dlg__step:not([hidden]) {
+      animation: cv-step 300ms var(--ease-sig);
+    }
+  }
+  @keyframes cv-in {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+  }
+  @keyframes cv-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes cv-step {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+  }
+
+
+/*
+ * Wide variant (contact): a black editorial panel on the left, the form on the right.
+ * Under 820 px it stacks and the panel shrinks to title + intro, so a phone never scrolls past a hero.
+ */
+.dlg--wide {
+  width: min(940px, calc(100vw - 32px));
+}
+.dlg--wide .dlg__panel {
+  padding: 0;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 820px) {
+  .dlg--wide .dlg__panel {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+.dlg__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: clamp(24px, 4vw, 40px);
+  background: var(--color-ink);
+  color: var(--color-parchment);
+}
+.dlg__logo {
+  width: 46px;
+  height: 42px;
+}
+.dlg__aside .dlg__title {
+  margin: 0 0 12px;
+  font-weight: 800;
+  font-size: clamp(32px, 4.6vw, 48px);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+.dlg__aside .dlg__intro {
+  color: #b4aea7;
+  font-size: 16px;
+}
+.dlg__points {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 20px 0 0;
+  border-top: 1px solid #3a3835;
+  list-style: none;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.dlg__points li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 10px;
+}
+.dlg__points li::before {
+  content: '■';
+  margin-top: 4px;
+  color: var(--color-ember);
+  font-size: 9px;
+  line-height: 1;
+}
+.dlg__aside-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: auto 0 0;
+  padding-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.dlg__aside-foot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #b4aea7;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 150ms var(--ease-sig);
+}
+.dlg__aside-foot a:hover,
+.dlg__aside-foot a:focus-visible {
+  color: var(--color-parchment);
+}
+.dlg__aside-foot svg {
+  width: 14px;
+  height: 14px;
+}
+.dlg__main {
+  display: grid;
+  align-content: start;
+  padding: clamp(24px, 4vw, 40px);
+}
+.dlg__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+@media (min-width: 560px) {
+  .dlg__row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.dlg__hint {
+  margin-top: -8px;
+  color: var(--color-charcoal);
+  font-size: 12.5px;
+}
+.dlg--wide textarea {
+  resize: vertical;
+  min-height: 112px;
+}
+.dlg--wide .dlg__chip span {
+  min-height: 42px;
+}
+@media (max-width: 819px) {
+  .dlg__logo,
+  .dlg__points,
+  .dlg__aside-foot {
+    display: none;
+  }
+  .dlg__aside {
+    gap: 10px;
+    padding: 26px 24px 22px;
+  }
+  .dlg__aside .dlg__title {
+    margin-bottom: 8px;
+    font-size: 34px;
+  }
+  /* the close button sits over the black panel when stacked */
+  .dlg--wide .dlg__close {
+    color: var(--color-parchment);
+  }
+}

@@ -1,0 +1,99 @@
+---
+import { Icon } from 'astro-icon/components';
+import { useTranslations, type Language } from '@/i18n/utils';
+import { profile } from '@/data/profile';
+
+interface Props {
+  lang: Language;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang, 'contact');
+---
+
+<dialog id="contact-dialog" class="dlg dlg--wide" aria-labelledby="contact-title" data-lang={lang}>
+  <div class="dlg__panel">
+    <span class="dlg__bar" aria-hidden="true"><i></i></span>
+    <button class="dlg__close" type="button" data-contact-close aria-label={t.close}>×</button>
+
+    <!-- left: the editorial panel (black, like the banners) -->
+    <aside class="dlg__aside">
+      <Icon name="brand" class="dlg__logo" />
+      <div class="dlg__lead">
+        <h2 id="contact-title" class="title dlg__title">{t.title}</h2>
+        <p class="dlg__intro">{t.intro}</p>
+      </div>
+      <ul class="dlg__points">
+        {t.points.map((point) => <li>{point}</li>)}
+      </ul>
+      <p class="dlg__aside-foot">
+        <a href={profile.github} target="_blank" rel="noopener"><Icon name="logo-github" /> GitHub</a>
+        <a href={profile.linkedin} target="_blank" rel="noopener"><Icon name="logo-linkedin" /> LinkedIn</a>
+      </p>
+    </aside>
+
+    <div class="dlg__main">
+      <!-- step 1: the message -->
+      <form class="dlg__step" data-step="request" novalidate>
+        <div class="dlg__row">
+          <label class="dlg__field">
+            <span>{t.name} <b aria-hidden="true">*</b></span>
+            <input name="name" type="text" required autocomplete="name" maxlength="80" />
+          </label>
+          <label class="dlg__field">
+            <span>{t.email} <b aria-hidden="true">*</b></span>
+            <input name="email" type="email" required autocomplete="email" inputmode="email" maxlength="254" aria-describedby="contact-email-hint" />
+          </label>
+        </div>
+        <small id="contact-email-hint" class="dlg__hint">{t.emailHint}</small>
+
+        <fieldset class="dlg__field dlg__reasons">
+          <legend>{t.topic}</legend>
+          <div class="dlg__chips">
+            {
+              t.topicOptions.map((label) => (
+                <label class="dlg__chip">
+                  <input type="radio" name="topic" value={label} />
+                  <span>{label}</span>
+                </label>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        <label class="dlg__field">
+          <span>{t.message} <b aria-hidden="true">*</b></span>
+          <textarea name="message" rows="4" required minlength="10" maxlength="2000"></textarea>
+          <small>{t.messageHint}</small>
+        </label>
+        <label class="dlg__check">
+          <input name="consent" type="checkbox" required />
+          <span>{t.consent}</span>
+        </label>
+        <input class="dlg__trap" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <p class="dlg__error" role="alert" data-error></p>
+        <p class="dlg__status mono" role="status" aria-live="polite" data-status></p>
+        <button class="dlg__submit" type="submit" data-label={t.send} data-busy={t.sending}>
+          <i class="dlg__spin" aria-hidden="true"></i><span data-btn-text>{t.send}</span>
+        </button>
+      </form>
+
+      <!-- step 2: done -->
+      <div class="dlg__step dlg__done" data-step="done" hidden>
+        <span class="dlg__seal" aria-hidden="true">
+          <i class="dlg__ring"></i>
+          <i class="dlg__ring dlg__ring--2"></i>
+          <svg viewBox="0 0 64 64" width="72" height="72">
+            <circle class="dlg__disc" cx="32" cy="32" r="30"></circle>
+            <path class="dlg__tick" d="M19 33.5 28 42.5 45.5 23" pathLength="1"></path>
+          </svg>
+        </span>
+        <h2 class="title dlg__title dlg__rise" style="--i:0">{t.doneTitle}</h2>
+        <p class="dlg__intro dlg__rise" style="--i:1" data-done-text data-template={t.doneText}></p>
+        <button class="dlg__submit dlg__rise" style="--i:2" type="button" data-contact-close>{t.close}</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="contact-i18n" set:html={JSON.stringify({ errors: t.errors, status: { sending: t.statusSending, slow: t.statusSlow } })} />
+</dialog>

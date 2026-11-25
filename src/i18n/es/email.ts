@@ -1,0 +1,63 @@
+/** Transactional email copy (src/emails). Subjects live in cv.mail. */
+export default {
+  rights: 'Luis Angel Anampa Lavado',
+  code: {
+    preview: 'Tu código de verificación: {code}. Vence en 10 minutos.',
+    eyebrow: 'Verificación',
+    title: 'Tu código para recibir el CV',
+    lead: 'Escribe este código en el portafolio para confirmar tu correo.',
+    expires: 'Vence en 10 minutos',
+    ignore: 'Si no pediste el CV de Luis Angel Anampa, ignora este correo. Nadie te va a pedir este código por otro medio.',
+    codeLabel: 'Código de verificación',
+  },
+  cv: {
+    preview: 'Mi CV va adjunto en PDF. Escríbeme desde el portafolio si quieres conversar.',
+    eyebrow: 'CV adjunto',
+    title: 'Aquí está mi CV',
+    lead: 'Gracias por tu interés. Va adjunto en PDF.',
+    talk: 'Si quieres conversar, escríbeme desde el portafolio.',
+    cta: 'Hablemos',
+    sign: 'Angel Anampa',
+    role: 'Ingeniero de software',
+    site: 'Ver el portafolio',
+  },
+  /** Internal notification: always read by Angel, so it is always rendered in Spanish. */
+  lead: {
+    preview: '{email} verificó su correo y recibió tu CV.',
+    eyebrow: 'Nuevo lead',
+    title: 'Alguien descargó tu CV',
+    lead: 'Verificó su correo con el código y ya recibió el PDF.',
+    rows: { email: 'Correo', reason: 'Motivo', phone: 'Teléfono', lang: 'Idioma del CV', date: 'Fecha' },
+    verified: 'Verificado',
+    noReason: 'Sin motivo',
+    noPhone: 'Sin teléfono',
+    phoneNote: 'Sin validar',
+    langs: { es: 'Español', en: 'Inglés' },
+    cta: 'Responder',
+    ctaSubject: 'Tu CV',
+    note: 'Responder a este correo le escribe directo a la persona.',
+  },
+  /** Owner notification for a contact message: always Spanish, it is for Angel. */
+  contact: {
+    preview: '{name} te escribió desde el portafolio.',
+    eyebrow: 'Nuevo mensaje',
+    title: 'Te escribieron desde el portafolio',
+    lead: 'Responde a este correo y le escribes directo a la persona.',
+    rows: { name: 'Nombre', email: 'Correo', topic: 'Tema', message: 'Mensaje', lang: 'Idioma', date: 'Fecha' },
+    noTopic: 'Sin tema',
+    langs: { es: 'Español', en: 'Inglés' },
+    cta: 'Responder',
+    ctaSubject: 'Sobre tu mensaje',
+  },
+  /** Receipt sent to the visitor, in the visitor's language. */
+  receipt: {
+    preview: 'Recibí tu mensaje. Te respondo pronto.',
+    eyebrow: 'Mensaje recibido',
+    title: 'Recibí tu mensaje',
+    lead: 'Gracias por escribirme, {name}. Te respondo pronto al correo desde el que escribiste.',
+    yours: 'Lo que me enviaste',
+    sign: 'Angel Anampa',
+    role: 'Ingeniero de software',
+    site: 'Ver el portafolio',
+  },
+} as const;

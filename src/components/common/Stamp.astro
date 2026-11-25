@@ -1,0 +1,85 @@
+---
+
+interface Props {
+  name: string;
+  role: string;
+  place: string;
+  year: string;
+}
+const { name, role, place, year } = Astro.props;
+
+// Perforated edge: circles cut out along the border of a 260×320 stamp.
+const W = 260;
+const H = 320;
+const STEP = 20;
+const holes: Array<[number, number]> = [];
+for (let x = STEP / 2; x < W; x += STEP) holes.push([x, 0], [x, H]);
+for (let y = STEP / 2 + 10; y < H; y += STEP) holes.push([0, y], [W, y]);
+
+---
+
+<figure class="stamp" data-reveal="stamp" aria-label={`${name}, ${role}, ${place} ${year}`}>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-hidden="true">
+    <defs>
+      <mask id="perf">
+        <rect width={W} height={H} fill="#fff" />
+        {holes.map(([x, y]) => <circle cx={x} cy={y} r="5.5" fill="#000" />)}
+      </mask>
+    </defs>
+    <g mask="url(#perf)">
+      <rect width={W} height={H} fill="#e9e5e1" />
+      <rect x="14" y="14" width={W - 28} height={H - 28} fill="none" stroke="#1d1d1b" stroke-width="1" />
+      <image href="/brand/symbol.svg" x="78" y="65" width="104" height="94" />
+    </g>
+    <text x="130" y="206" text-anchor="middle" class="stamp__name">{name.toUpperCase()}</text>
+    <path d="M62 224 q14 -14 26 0 t26 0 t26 0 t26 0" fill="none" stroke="#1d1d1b" stroke-width="1.4" />
+    <text x="130" y="250" text-anchor="middle" class="stamp__small">{role.toUpperCase()}</text>
+    <text x="130" y="270" text-anchor="middle" class="stamp__small">{place.toUpperCase()} · {year}</text>
+  </svg>
+  
+</figure>
+
+<style>
+  .stamp {
+    margin: 0;
+    width: min(100%, 300px);
+    rotate: -3deg;
+    filter: drop-shadow(-4px 4px 6px rgb(29 29 27 / 0.2));
+  }
+  .stamp__sr {
+    display: none;
+  }
+  .stamp__aa {
+    fill: var(--color-parchment);
+    font: 900 17px var(--font-display);
+  }
+  .stamp__name {
+    fill: var(--color-ink);
+    font: 800 14px var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  .stamp__small {
+    fill: var(--color-ink);
+    font: 400 9.5px var(--font-mono);
+    letter-spacing: 0.06em;
+  }
+
+  /* The stamp lands: scales down from big, a little rotated, with one small rebound. */
+  @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    .stamp[data-reveal] {
+      opacity: 0;
+      translate: none;
+      scale: 1.35;
+      rotate: -9deg;
+      transition:
+        opacity 150ms var(--ease-sig),
+        scale 600ms cubic-bezier(0.3, 1.5, 0.5, 1),
+        rotate 600ms cubic-bezier(0.3, 1.5, 0.5, 1);
+    }
+    .stamp[data-reveal].is-in {
+      opacity: 1;
+      scale: 1;
+      rotate: -3deg;
+    }
+  }
+</style>

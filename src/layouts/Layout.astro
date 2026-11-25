@@ -1,0 +1,79 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '@/styles/global.css';
+import Seo from '@/components/common/Seo.astro';
+import Veil from '@/components/common/Veil.astro';
+import Header from '@/components/common/Header.astro';
+import Footer from '@/components/common/Footer.astro';
+import CvModal from '@/components/common/CvModal.astro';
+import ContactModal from '@/components/common/ContactModal.astro';
+import { useTranslations, type Language } from '@/i18n/utils';
+import plexRegular from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
+import bricolage from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
+
+interface Props {
+  title: string;
+  description: string;
+  lang: Language;
+  alternates: Record<Language, string>;
+  jsonLd?: boolean;
+}
+const { title, description, lang, alternates, jsonLd } = Astro.props;
+const nav = useTranslations(lang, 'nav');
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={plexRegular} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={bricolage} as="font" type="font/woff2" crossorigin />
+    <Seo {title} {description} {lang} {alternates} {jsonLd} />
+    <!-- Veil: first visit of the session, and only when motion is allowed. Runs before first paint. -->
+    <script is:inline>
+      (function () {
+        try {
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          if (sessionStorage.getItem('veil')) return;
+          sessionStorage.setItem('veil', '1');
+          document.documentElement.dataset.veil = 'on';
+        } catch (e) {}
+      })();
+    </script>
+    <ClientRouter />
+  </head>
+  <body>
+    <a class="skip" href="#main">{nav.skip}</a>
+    <Veil />
+    <Header {lang} {alternates} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer {lang} />
+    <CvModal {lang} />
+    <ContactModal {lang} />
+    <script>
+      import '@/scripts/site';
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .skip {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 200;
+    padding: 10px 16px;
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    transform: translateY(-200%);
+  }
+  .skip:focus {
+    transform: none;
+  }
+  #main:focus {
+    outline: none;
+  }
+</style>

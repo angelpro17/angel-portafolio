@@ -1,0 +1,34 @@
+node_modules
+dist
+.astro
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Vercel local link and build output
+.vercel
+
+# AI assistants: config, skills, memory, prompts, local tool state
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+.codex/
+.agents/
+.cursor/
+.cursorrules
+.windsurf/
+.github/copilot-instructions.md
+.playwright-mcp/
+.mcp.json
+/skills/
+/prompts/
+*prompt*.md
+*-prompt.md
+/output/
+
+# Working notes and local-only scripts (design notes, image prep with local paths)
+DESIGN.md
+/scripts/

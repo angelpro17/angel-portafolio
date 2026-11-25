@@ -1,0 +1,100 @@
+---
+interface Props {
+  /** Banner text. "|" starts a new line. */
+  text: string;
+  /** Accessible heading text (properly cased). Falls back to the banner text. */
+  label?: string;
+  id?: string;
+  as?: 'h1' | 'h2';
+}
+const { text, label, id, as: Tag = 'h2' } = Astro.props;
+const lines = text.split('|');
+const longest = Math.max(...lines.map((l) => l.length));
+// Size the word so the longest line fills ~94% of the viewport width.
+const vw = Math.min(40, 94 / (longest * 0.78));
+let index = 0;
+---
+
+<section class="banner" {id}>
+  <Tag class="banner__text headline" style={`--size:${vw.toFixed(2)}vw`} data-reveal="letters" aria-label={label ?? lines.join(' ')}>
+    <span class="banner__drift">
+      {lines.map((line) => (
+        <span class="banner__line" aria-hidden="true">
+          {[...line].map((ch) =>
+            ch === ' ' ? <span class="banner__sp"> </span> : <span class="banner__ch" style={`--i:${index++}`}>{ch}</span>,
+          )}
+        </span>
+      ))}
+    </span>
+  </Tag>
+</section>
+
+<style>
+  .banner {
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    /* Side gutter matches the header and page wrap so everything shares one left edge. */
+    padding: clamp(28px, 2.4vw, 36px) clamp(16px, 3vw, 43px) clamp(12px, 1.6vw, 24px);
+    overflow: hidden;
+  }
+  .banner__text {
+    margin: 0;
+    font-size: var(--size);
+    line-height: 0.8;
+    letter-spacing: -0.045em;
+    font-weight: 900;
+  }
+  .banner__drift {
+    display: block;
+  }
+  .banner__line {
+    display: block;
+    width: max-content;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-top: 0.14em;
+    margin-top: -0.06em;
+    padding-bottom: 0.02em;
+    /* Negative tracking shrinks the last glyph's box; without this the mask clips its right edge. */
+    padding-right: 0.08em;
+  }
+  .banner__ch,
+  .banner__sp {
+    display: inline-block;
+    white-space: pre;
+  }
+
+  /* Letters rise out of a mask, one after another. */
+  @media (prefers-reduced-motion: no-preference) and (scripting: enabled) {
+    .banner__ch {
+      transform: translateY(105%);
+      transition: transform 900ms var(--ease-sig) min(calc(var(--i) * 40ms), 600ms);
+    }
+    [data-reveal='letters'].is-in .banner__ch {
+      transform: none;
+    }
+  }
+
+  /* Scroll-driven drift: the giant word slides sideways as the banner crosses the screen. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .banner__drift {
+        animation-name: drift;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+      }
+      .banner > .banner__text > .banner__drift {
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+      }
+    }
+  }
+  @keyframes drift {
+    from {
+      translate: -2vw 0;
+    }
+    to {
+      translate: 2vw 0;
+    }
+  }
+</style>

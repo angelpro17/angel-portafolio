@@ -1,0 +1,92 @@
+---
+import { Icon } from 'astro-icon/components';
+import Banner from '@/components/common/Banner.astro';
+import Marquee from './Marquee.astro';
+import { profile } from '@/data/profile';
+import { sectionPath, useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang, 'opening');
+---
+
+<header class="hero">
+  <Banner text={profile.name.toUpperCase()} label={profile.fullName} as="h1" />
+  <div class="hero__strip">
+    <div class="wrap hero__grid">
+      <div class="hero__lead">
+        <p class="eyebrow hero__eyebrow" data-reveal>{t.eyebrow}</p>
+        <p class="hero__tagline" data-reveal style="--d:60ms">{t.tagline}</p>
+      </div>
+      <div class="hero__side" data-reveal style="--d:140ms">
+        <p class="hero__role">{t.intro}</p>
+        <p class="hero__stack mono">{t.stack}</p>
+        <p class="hero__cta">
+          <a class="link" href={sectionPath(lang, 'work')}><Icon name="arrow-down" /> {t.ctaWork}</a>
+          <button class="link" type="button" data-cv-open><Icon name="download" /> {t.ctaCv}</button>
+        </p>
+      </div>
+    </div>
+  </div>
+</header>
+<Marquee {lang} />
+
+<style>
+  .hero__strip {
+    background: var(--color-ink);
+    color: var(--color-parchment);
+    padding-block: clamp(20px, 3vw, 40px) clamp(28px, 4vw, 56px);
+  }
+  .hero__grid {
+    display: grid;
+    gap: 24px 48px;
+    align-items: end;
+  }
+  @media (min-width: 900px) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+  }
+  .hero__eyebrow {
+    margin: 0 0 12px;
+    color: var(--color-parchment);
+    opacity: 0.65;
+  }
+  .hero__tagline {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(32px, 4.3vw, 66px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    font-variation-settings: 'opsz' 36;
+    text-wrap: balance;
+  }
+  .hero__side {
+    display: grid;
+    gap: 8px;
+  }
+  .hero__role {
+    margin: 0;
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero__stack {
+    margin: 0;
+    color: var(--color-ember-lit);
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin: 14px 0 0;
+    font-size: 17px;
+  }
+  .hero__cta :global(.link:hover),
+  .hero__cta :global(.link:focus-visible) {
+    color: var(--color-ember-lit);
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+import { useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang, 'cv');
+---
+
+<dialog id="cv-dialog" class="dlg" aria-labelledby="cv-title" data-lang={lang}>
+  <div class="dlg__panel">
+    <span class="dlg__bar" aria-hidden="true"><i></i></span>
+    <button class="dlg__close" type="button" data-cv-close aria-label={t.close}>×</button>
+    <p class="eyebrow dlg__eyebrow">CV</p>
+
+    <!-- step 1: email -->
+    <form class="dlg__step" data-step="request" novalidate>
+      <h2 id="cv-title" class="title dlg__title">{t.title}</h2>
+      <p class="dlg__intro">{t.intro}</p>
+
+      <label class="dlg__field">
+        <span>{t.email} <b aria-hidden="true">*</b></span>
+        <input name="email" type="email" required autocomplete="email" inputmode="email" maxlength="254" aria-describedby="cv-email-hint" />
+        <small id="cv-email-hint">{t.emailHint}</small>
+      </label>
+      <fieldset class="dlg__field dlg__reasons" data-reasons>
+        <legend>{t.reason}</legend>
+        <div class="dlg__chips">
+          {
+            t.reasonOptions.map((label, i) => (
+              <label class="dlg__chip">
+                <input type="radio" name="reasonKind" value={i === t.reasonOptions.length - 1 ? 'other' : String(i)} data-label={label} />
+                <span>{label}</span>
+              </label>
+            ))
+          }
+        </div>
+        <div class="dlg__other" data-other hidden>
+          <textarea name="reasonOther" rows="2" maxlength="500" placeholder={t.reasonOther} aria-label={t.reasonOther}></textarea>
+        </div>
+      </fieldset>
+      <label class="dlg__field">
+        <span>{t.phone}</span>
+        <input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" />
+      </label>
+      <label class="dlg__check">
+        <input name="consent" type="checkbox" required />
+        <span>{t.consent}</span>
+      </label>
+      <input class="dlg__trap" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      <p class="dlg__error" role="alert" data-error></p>
+      <p class="dlg__status mono" role="status" aria-live="polite" data-status></p>
+      <button class="dlg__submit" type="submit" data-label={t.send} data-busy={t.sending}>
+        <i class="dlg__spin" aria-hidden="true"></i><span data-btn-text>{t.send}</span>
+      </button>
+    </form>
+
+    <!-- step 2: code -->
+    <form class="dlg__step" data-step="verify" novalidate hidden>
+      <h2 class="title dlg__title">{t.codeTitle}</h2>
+      <p class="dlg__intro" data-code-intro data-template={t.codeIntro}></p>
+      <label class="dlg__field">
+        <span>{t.code}</span>
+        <input class="dlg__code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required />
+      </label>
+      <p class="dlg__dev mono" data-dev hidden></p>
+      <p class="dlg__error" role="alert" data-error></p>
+      <p class="dlg__status mono" role="status" aria-live="polite" data-status></p>
+      <button class="dlg__submit" type="submit" data-label={t.verify} data-busy={t.verifying}>
+        <i class="dlg__spin" aria-hidden="true"></i><span data-btn-text>{t.verify}</span>
+      </button>
+      <button class="dlg__back link" type="button" data-cv-restart>{t.resend}</button>
+    </form>
+
+    <!-- step 3: done -->
+    <div class="dlg__step dlg__done" data-step="done" hidden>
+      <span class="dlg__seal" aria-hidden="true">
+        <i class="dlg__ring"></i>
+        <i class="dlg__ring dlg__ring--2"></i>
+        <svg viewBox="0 0 64 64" width="72" height="72">
+          <circle class="dlg__disc" cx="32" cy="32" r="30" />
+          <path class="dlg__tick" d="M19 33.5 28 42.5 45.5 23" pathLength="1" />
+        </svg>
+      </span>
+      <h2 class="title dlg__title dlg__rise" style="--i:0">{t.doneTitle}</h2>
+      <p class="dlg__intro dlg__rise" style="--i:1" data-done-text data-template={t.doneText}></p>
+      <button class="dlg__submit dlg__rise" style="--i:2" type="button" data-cv-close>{t.close}</button>
+    </div>
+  </div>
+
+  <script type="application/json" id="cv-i18n" set:html={JSON.stringify({ errors: t.errors, devNote: t.devNote, status: { sending: t.statusSending, verifying: t.statusVerifying, slow: t.statusSlow } })} />
+</dialog>
+

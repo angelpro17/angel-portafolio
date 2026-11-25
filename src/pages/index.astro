@@ -1,0 +1,18 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import HomePage from '@/components/home/HomePage.astro';
+import { useTranslations, homePath, alternatesFor } from '@/i18n/utils';
+
+const lang = 'es';
+const meta = useTranslations(lang, 'meta');
+---
+
+<Layout
+  title={meta.homeTitle}
+  description={meta.homeDescription}
+  {lang}
+  alternates={alternatesFor(homePath)}
+  jsonLd
+>
+  <HomePage {lang} />
+</Layout>

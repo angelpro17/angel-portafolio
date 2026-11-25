@@ -1,0 +1,43 @@
+---
+interface Props {
+  index: string;
+  intro?: string;
+  id?: string;
+}
+const { index, intro, id } = Astro.props;
+---
+
+<div class="wrap section-intro" {id}>
+  <p class="eyebrow" data-reveal>{index}</p>
+  {intro && <p class="section-intro__text measure" data-reveal style="--d:60ms">{intro}</p>}
+</div>
+
+<style>
+  .section-intro {
+    display: grid;
+    gap: 12px 43px;
+    padding-top: clamp(28px, 4vw, 58px);
+  }
+  @media (min-width: 900px) {
+    .section-intro {
+      grid-template-columns: 120px minmax(0, 1fr);
+    }
+  }
+  /* Index numeral is sized so its height spans the intro's two lines. */
+  .section-intro {
+    --s: clamp(20px, 1.8vw, 24px);
+  }
+  .section-intro .eyebrow {
+    margin: 0;
+    font-size: calc(var(--s) * 2.4);
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    padding-top: calc(var(--s) * 0.1);
+  }
+  .section-intro__text {
+    margin: 0;
+    font-size: var(--s);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+</style>

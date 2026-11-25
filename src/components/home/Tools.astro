@@ -1,0 +1,81 @@
+---
+import Banner from '@/components/common/Banner.astro';
+import SectionIntro from '@/components/common/SectionIntro.astro';
+import { layerIds, tools } from '@/data/tools';
+import { useTranslations, type Language } from '@/i18n/utils';
+
+interface Props {
+  lang: Language;
+}
+const t = useTranslations(Astro.props.lang, 'tools');
+---
+
+<div>
+  <Banner text={t.banner} label={t.title} />
+  <SectionIntro index="05" intro={t.intro} />
+  <ol class="wrap layers" data-reveal>
+    {layerIds.map((id, i) => (
+      <li class={`layer layer--${i}`}>
+        <div class="layer__head">
+          <span class="mono layer__index">{String(i + 1).padStart(2, '0')}</span>
+          <h3 class="layer__label title">{t.layers[id].label}</h3>
+          <p class="layer__blurb">{t.layers[id].blurb}</p>
+        </div>
+        <ul class="layer__items mono">
+          {tools[id].map((tool) => <li>{tool}</li>)}
+        </ul>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  .layers {
+    margin-block: clamp(28px, 4vw, 58px) clamp(48px, 7vw, 115px);
+    list-style: none;
+    display: block;
+  }
+  /* Depth: the surface is bone, each layer below gets closer to ink. Ink = system. */
+  .layer {
+    display: grid;
+    gap: 16px 43px;
+    padding: clamp(20px, 3vw, 36px);
+  }
+  @media (min-width: 900px) {
+    .layer {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+      align-items: center;
+    }
+  }
+  .layer--0 { background: var(--color-bone); color: var(--color-ink); }
+  .layer--1 { background: #69645f; color: var(--color-parchment); }
+  .layer--2 { background: #3b3936; color: var(--color-parchment); }
+  .layer--3 { background: var(--color-ink); color: var(--color-parchment); }
+  .layer__head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 16px;
+    align-items: baseline;
+  }
+  .layer__index {
+    opacity: 0.7;
+  }
+  .layer__label {
+    margin: 0;
+    font-size: clamp(30px, 3.2vw, 44px);
+  }
+  .layer__blurb {
+    grid-column: 2;
+    margin: 0;
+    font-size: 17px;
+    opacity: 0.8;
+  }
+  .layer__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

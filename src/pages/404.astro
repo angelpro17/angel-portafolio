@@ -1,0 +1,106 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '@/layouts/Layout.astro';
+import { useTranslations, homePath, sectionPath, alternatesFor } from '@/i18n/utils';
+
+const lang = 'es';
+const meta = useTranslations(lang, 'meta');
+
+// The illustration is optional: drop angel-404.png (transparent) in src/assets/404/ and it appears.
+// Until then the page shows the typographic 404, so the build never breaks.
+const found = import.meta.glob<{ default: ImageMetadata }>('/src/assets/404/angel-404.{png,webp}', { eager: true });
+const art = Object.values(found)[0]?.default;
+---
+
+<Layout title={meta.notFoundTitle} description={meta.notFoundText} {lang} alternates={alternatesFor(homePath)}>
+  <section class="wrap not-found">
+    <p class="eyebrow" data-reveal>{meta.notFoundEyebrow}</p>
+    <h1 class="not-found__title" data-reveal style="--d:60ms">{meta.notFoundHeading}</h1>
+
+    <div class="not-found__art" data-reveal style="--d:120ms">
+      {
+        art ? (
+          <Image src={art} alt={meta.notFoundArtAlt} widths={[480, 900, 1400, 1800]} sizes="(min-width: 960px) 900px, calc(100vw - 32px)" loading="eager" />
+        ) : (
+          <p class="not-found__num" aria-hidden="true">404</p>
+        )
+      }
+    </div>
+
+    <p class="measure soft not-found__text" data-reveal style="--d:180ms">{meta.notFoundText}</p>
+    <p class="not-found__links mono" data-reveal style="--d:240ms">
+      <a class="link" href={homePath(lang)}>{meta.notFoundBack}</a>
+      <a class="link" href={sectionPath(lang, 'work')}>{meta.notFoundWork}</a>
+      <a class="link" href={sectionPath(lang, 'contact')}>{meta.notFoundContact}</a>
+    </p>
+  </section>
+</Layout>
+
+<style>
+  /* One screen, no scroll: header + footer keep their size, the illustration takes what is left. */
+  :global(html:has(.not-found)),
+  :global(body:has(.not-found)) {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  :global(body:has(.not-found)) {
+    display: flex;
+    flex-direction: column;
+  }
+  :global(body:has(.not-found) > main) {
+    flex: 1;
+    min-height: 0;
+  }
+  .not-found {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    justify-items: center;
+    text-align: center;
+    padding-block: clamp(16px, 3vh, 40px) clamp(16px, 3vh, 40px);
+  }
+  .not-found__title {
+    max-width: 18ch;
+    margin: 8px 0 0;
+    font-size: clamp(26px, min(4.4vw, 6.5vh), 60px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+  .not-found__art {
+    min-height: 0;
+    width: 100%;
+    max-width: 900px;
+    margin-block: clamp(12px, 2.5vh, 32px);
+    position: relative;
+  }
+  /* Absolute fill: the image can never push the row taller than the space it was given. */
+  .not-found__art :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .not-found__num {
+    margin: 0;
+    font-family: var(--font-display);
+  font-variation-settings: 'opsz' 36;
+    font-weight: 900;
+    font-size: clamp(100px, min(30vw, 38vh), 360px);
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    padding-right: 0.06em;
+    color: var(--color-ink);
+  }
+  .not-found__text {
+    margin: 0;
+  }
+  .not-found__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 28px;
+    margin: clamp(12px, 2.4vh, 24px) 0 0;
+  }
+</style>

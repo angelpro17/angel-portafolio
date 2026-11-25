@@ -1,0 +1,24 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import CaseView from '@/components/work/CaseView.astro';
+import { caseSlugs, type CaseSlug } from '@/data/projects';
+import { useTranslations, workPath, alternatesFor } from '@/i18n/utils';
+
+export function getStaticPaths() {
+  return caseSlugs.map((slug) => ({ params: { slug } }));
+}
+
+const lang = 'es';
+const slug = Astro.params.slug as CaseSlug;
+const meta = useTranslations(lang, 'meta');
+const project = useTranslations(lang, 'projects')[slug];
+---
+
+<Layout
+  title={`${project.name} — ${meta.caseSuffix}`}
+  description={project.summary}
+  {lang}
+  alternates={alternatesFor((l) => workPath(slug, l))}
+>
+  <CaseView {slug} {lang} />
+</Layout>

@@ -1,0 +1,60 @@
+---
+import { dictionaries, type Language } from '@/i18n/dictionaries';
+import { profile } from '@/data/profile';
+
+interface Props {
+  title: string;
+  description: string;
+  lang: Language;
+  /** Canonical path of every language version of this page. */
+  alternates: Record<Language, string>;
+  jsonLd?: boolean;
+}
+
+const { title, description, lang, alternates, jsonLd = false } = Astro.props;
+const site = Astro.site ?? new URL(profile.site);
+const canonical = new URL(alternates[lang], site).href;
+const ogImage = new URL('/og.jpg', site).href;
+const meta = dictionaries[lang].meta;
+const other: Language = lang === 'es' ? 'en' : 'es';
+
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.fullName,
+  alternateName: profile.name,
+  jobTitle: meta.jobTitle,
+  url: profile.site,
+  image: new URL('/og.jpg', site).href,
+  sameAs: [profile.github, profile.linkedin],
+  address: { '@type': 'PostalAddress', addressLocality: 'Lima', addressCountry: 'PE' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'Universidad Peruana de Ciencias Aplicadas' },
+};
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<link rel="alternate" hreflang={lang === 'es' ? 'es-PE' : 'en-US'} href={canonical} />
+<link rel="alternate" hreflang={other === 'es' ? 'es-PE' : 'en-US'} href={new URL(alternates[other], site).href} />
+<link rel="alternate" hreflang="x-default" href={new URL(alternates.es, site).href} />
+<link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=2" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=2" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
+<meta name="theme-color" content="#e2dedb" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={meta.siteName} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:locale" content={meta.ogLocale} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={meta.ogAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(person)} />}
